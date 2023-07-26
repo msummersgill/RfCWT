@@ -35,13 +35,37 @@ sudo make
 sudo make install
 ```
 
-### Installing from Github
+### Installing the Package
+
 
 This package has not been submitted to CRAN. For now, the `remotes` package can be used to install directly from this repository, or you can clone and install from local source yourself.
 
 ```r
-remotes::install_github(" https://github.com/msummersgill/RfCWT.git")
+remotes::install_github("https://github.com/msummersgill/RfCWT.git")
 ```
+
+In the event the package fails to build out of the box, cloning and building from source gives an opportunity to adjust the `Makevars` file as needed.
+
+```bash
+git clone https://github.com/msummersgill/RfCWT.git
+cd RfCWT
+R CMD INSTALL --preclean --no-multiarch --with-keep.source RfCWT
+```
+
+#### Makevars
+
+```
+CXX_STD = CXX17
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) -mavx -O3
+
+## This path should work if the desired installation of FFTW is picked up first on the library path
+#PKG_LIBS = $(SHLIB_OPENMP_CFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -lfftw3f 
+
+## Hard code path for some local issues I had with an old FFTW installation being picked up
+PKG_LIBS = $(SHLIB_OPENMP_CFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) /usr/lib/libfftw3f.a
+
+```
+
 
 ## Known Issues
 
