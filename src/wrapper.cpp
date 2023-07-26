@@ -5,7 +5,6 @@
 #include "fcwt.h"
 using namespace Rcpp;
 
-
 SCALETYPE convert(std::string x) {
   if(x == "FCWT_LINSCALES") return FCWT_LINSCALES;
   else if(x == "FCWT_LOGSCALES") return FCWT_LOGSCALES;
@@ -13,12 +12,20 @@ SCALETYPE convert(std::string x) {
   else throw std::runtime_error("Invalid vlue for 'dist'. Try 'FCWT_LOGSCALES' or FCWT_LINFREQS'");
 }
 
-NumericVector rcppRev(NumericVector x) {
-  NumericVector revX = clone<NumericVector>(x);
-  std::reverse(revX.begin(), revX.end());
-  ::Rf_copyMostAttrib(x, revX); 
-  return revX;
-}
+//' Executes a continous wavelet transform on an input signal
+//'
+//' @name fCWT
+//' @param x Input signal
+//' @param fn Number of Frequencies
+//' @param f0 Low end of the frequency range
+//' @param f1 High End of the frequency range
+//' @param fs Sample rate of input signal
+//' @param nthreads Number of threads to be used for openmp multithreading 
+//' @param optimize Whether FFTW should attempt to create an optimized plan prior to starting 
+//' @param dist Distribution of frequency bands across the range. Should be one of "FCWT_LINSCALES","FCWT_LOGSCALES", or "FCWT_LINFREQS"
+//' @param normalization Whether or not the output scalogram should be normalized from range 0-1
+//' @param bandwidth Frequency bandwidth of the mother wavelet to be used
+//' @return List object with a complex matrix scalogram and the frequencies associated with each band
 
 // [[Rcpp::export]]
 Rcpp::List fCWT(std::vector<float> x,
@@ -34,8 +41,7 @@ Rcpp::List fCWT(std::vector<float> x,
                 float bandwidth = 2.0) {
   
   int n = x.size(); //signal length
-  float twopi = 2*PI;
-  
+
   //output: n x scales
   std::vector<complex<float>> tfm(n*fn);
   
@@ -85,8 +91,8 @@ Rcpp::List fCWT(std::vector<float> x,
   // Extract frequencies associated with each scale
   float freqs[fn];
   scs.getFrequencies(freqs,fn);
-  // Convert to a vector and reverse, by default frequencies are returned sorted high -> low
-  NumericVector outfreqs = rcppRev(NumericVector(freqs,freqs+sizeof(freqs)/sizeof(*freqs)));
+  // Convert to a vector
+  NumericVector outfreqs = NumericVector(freqs,freqs+sizeof(freqs)/sizeof(*freqs));
   
   //NumericVector scales2 = wrap(scales);
   return Rcpp::List::create(Rcpp::Named("scalogram")=scalogram,

@@ -14,3 +14,8 @@ Imports: Rcpp (>= 1.0.11)
 LinkingTo: Rcpp
 SystemRequirements: FFTW (>=3.3.10)
 RoxygenNote: 7.2.3
+Encoding: UTF-8
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

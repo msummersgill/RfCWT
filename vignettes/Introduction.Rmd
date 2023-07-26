@@ -1,0 +1,108 @@
+---
+title: "Introduction"
+output: 
+  rmarkdown::html_vignette:
+    code_folding: show
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width=7.5
+)
+```
+
+```{r setup}
+suppressPackageStartupMessages({
+  library(data.table)
+  library(RfCWT)
+  library(plotly)
+})
+
+```
+
+
+## Input Signal
+
+```{r}
+
+set.seed(1234)
+sampleLength <- 2000L
+sampleFrequency <- 10L
+Index <- seq.default(from = 1/sampleFrequency, by = 1/sampleFrequency, length.out = sampleLength)
+Scale <- c(seq.default(from = 0, to = 1.25, length.out = sampleLength/2),
+           seq.default(from = 1.25, to = 0, length.out = sampleLength/2))
+Drift   <- seq.default(from = 0.75, to = 1.5, length.out = sampleLength)
+DT <- data.table(Time = Index,
+                 c1 = sin(1/8*(2*pi)*Index),
+                 c2 = sin(1/Drift*(2*pi)*Index*1.25),
+                 c3 = sin(1/5*(2*pi)*Index)*(Scale^3),
+                 Noise = rnorm(sampleLength,mean = 0,sd = 0.5))
+DT[,Signal := c1 + c2 + c3 + Noise]
+
+```
+
+
+```{r class.source = 'fold-hide'}
+DT |> 
+  plot_ly() |> 
+  add_lines(x ~Time, y = ~c1 ,name = "c1 - Constant",
+            color = I("goldenrod1"), line = list(width = 1.5)) |> 
+  add_lines(x ~Time, y = ~c2 ,name = "c2 - Shifting Frequency",
+            color = I("firebrick2"), line = list(width = 1.5)) |> 
+  add_lines(x ~Time, y = ~c3 ,name = "c3 - Modulated Amplitude",
+            color = I("dodgerblue3"), line = list(width = 1.5)) |> 
+  add_lines(x ~Time, y = ~Noise ,name = "Noise",
+            color = I("gray30"),line = list(width = 1)) |> 
+  add_lines(x ~Time, y = ~Signal ,name = "Composite Signal",
+            color = I("black"), line = list(width = 2.5)) |> 
+  layout(hovermode = "compare",
+         plot_bgcolor = "rgba(235,235,235,0.7)",
+         paper_bgcolor = "rgba(0,0,0,0)",
+         legend = list(x = 0.5, y = -0.1,
+                       xanchor = "center",yanchor = "top",
+                       orientation = "h",
+                       bgcolor = "transparent"),
+         yaxis = list(title = "Amplitude",
+                      gridcolor = "rgba(255,255,255,1)"),
+         xaxis = list(title = "",
+                      gridcolor = "rgba(255,255,255,1)")) -> InputPlot
+
+InputPlot
+```
+
+
+## Calculate CWT
+
+
+Using `RfCWT::fCWT()`, we can calculate the CWT of our signal.
+
+```{r}
+fCWTResult <- RfCWT::fCWT(DT[,Signal],
+                          f0 = 1/10,
+                          f1 = 2,nthreads = 24L,
+                          fn = 500,
+                          fs = sampleFrequency,
+                          dist = "FCWT_LOGSCALES",
+                          bandwidth = 30/2/pi,
+                          normalization = FALSE)
+
+M <- t(Mod(fCWTResult$scalogram))
+```
+
+
+```{r fig.height=6, class.source = 'fold-hide'}
+plot_ly() |>
+  add_heatmap(z =M,x = Index, y = 1/fCWTResult$freqs,name = "Scalogram")  |>
+  layout(yaxis = list(title = "Period"),
+         xaxis = list(title = "")) |> 
+  hide_colorbar() -> ScalogramPlot
+
+subplot(ScalogramPlot,InputPlot,nrows = 2, shareX = T, titleY = T)
+```
+
