@@ -17,7 +17,7 @@
 #' @return List object with a complex matrix scalogram and the frequencies associated with each band
 NULL
 
-fCWT <- function(x, fn = 100L, f0 = 0.001953125, f1 = 0.5, fs = 1, nthreads = 1L, optimize = FALSE, flags = "ESTIMATE", dist = "FCWT_LINFREQS", normalization = FALSE, bandwidth = 2.0) {
+fCWT <- function(x, fn = 100L, f0 = 0.001953125, f1 = 0.5, fs = 1, nthreads = 1L, optimize = FALSE, flags = "FFTW_MEASURE", dist = "FCWT_LINFREQS", normalization = FALSE, bandwidth = 2.0) {
     .Call(`_RfCWT_fCWT`, x, fn, f0, f1, fs, nthreads, optimize, flags, dist, normalization, bandwidth)
 }
 

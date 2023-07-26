@@ -35,7 +35,7 @@ Rcpp::List fCWT(std::vector<float> x,
                 float fs = 1,
                 int nthreads = 1,
                 bool optimize = false,
-                std::string flags = "ESTIMATE",
+                std::string flags = "FFTW_MEASURE",
                 std::string dist = "FCWT_LINFREQS",
                 bool normalization = false,
                 float bandwidth = 2.0) {
@@ -75,7 +75,6 @@ Rcpp::List fCWT(std::vector<float> x,
   //fn        - number of wavelets to generate across frequency range
   Scales scs(wavelet, convert(dist), fs, f0, f1, fn);
 
-
   //Perform a CWT
   //cwt(input, length, output, scales)
   //
@@ -85,6 +84,7 @@ Rcpp::List fCWT(std::vector<float> x,
   //output    - floating pointer to output array
   //scales    - pointer to scales object
   fcwt.cwt(&x[0], n, &tfm[0], &scs);
+  
   ComplexVector scalogram = wrap(tfm);
   scalogram.attr("dim") = Dimension(n, fn);
   
@@ -96,6 +96,7 @@ Rcpp::List fCWT(std::vector<float> x,
   
   //NumericVector scales2 = wrap(scales);
   return Rcpp::List::create(Rcpp::Named("scalogram")=scalogram,
-                            Rcpp::Named("freqs")=outfreqs);
+                           Rcpp::Named("freqs")=outfreqs);
+  
 }
 

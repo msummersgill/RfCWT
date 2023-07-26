@@ -20,9 +20,19 @@ For optimal performance, FFTW needs to be configured to use OpenMP for multi-thr
 wget https://fftw.org/pub/fftw/fftw-3.3.10.tar.gz
 tar -zxvf fftw-3.3.10.tar.gz
 cd fftw-3.3.10
-./configure CC=gfortran --enable-float=TRUE --enable-openmp --enable-avx=TRUE --enable-avx2=TRUE CFLAGS="-fopenmp"
-make
-make install
+
+./configure CC=gcc             \
+            --prefix=/usr      \
+            --enable-shared    \
+            --enable-threads   \
+            --enable-float     \
+            --enable-openmp    \
+            --enable-sse2      \
+            --enable-avx       \
+            --enable-avx2      \
+            CFLAGS="-fopenmp"
+sudo make
+sudo make install
 ```
 
 ### Installing from Github
@@ -35,4 +45,5 @@ remotes::install_github(" https://github.com/msummersgill/RfCWT.git")
 
 ## Known Issues
 
-+ FFTW plans are not generated as expected.
++ Execution speed still falls short of expectations, but drastically exceeds other R implementations
++ FFTW plans generated, but not used after generation

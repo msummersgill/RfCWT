@@ -313,7 +313,7 @@ void FCWT::daughter_wavelet_multiplication(fftwf_complex *input, fftwf_complex *
 void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
   
   int nt = find2power(maxsize);
-  
+
   if(nt <= 10) {
     std::cerr << "Maxsize is too small (<=1024)... please use a larger number" << std::endl;
   }
@@ -343,9 +343,12 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
     p_for = fftwf_plan_dft_r2c_1d(n, dat, O1, flags);
     
     std::cout << "Calculating optimal scheme for backward FFT with N:" << n << std::endl;
+    
     p_back = fftwf_plan_dft_1d(n, O1, out, FFTW_BACKWARD, flags);
     
     fftwf_export_wisdom_to_filename(file_for);
+    
+    std::cout << "Created Wisdom File: " << file_for << std::endl;
     
     free(dat);
     fftwf_free(O1);
