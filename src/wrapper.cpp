@@ -5,16 +5,33 @@
 #include "fcwt.h"
 using namespace Rcpp;
 
+
+SCALETYPE convert(std::string x) {
+  if(x == "FCWT_LINSCALES") return FCWT_LINSCALES;
+  else if(x == "FCWT_LOGSCALES") return FCWT_LOGSCALES;
+  else if(x == "FCWT_LINFREQS") return FCWT_LINFREQS;
+  else throw std::runtime_error("Invalid vlue for 'dist'. Try 'FCWT_LOGSCALES' or FCWT_LINFREQS'");
+}
+
+NumericVector rcppRev(NumericVector x) {
+  NumericVector revX = clone<NumericVector>(x);
+  std::reverse(revX.begin(), revX.end());
+  ::Rf_copyMostAttrib(x, revX); 
+  return revX;
+}
+
 // [[Rcpp::export]]
 Rcpp::List fCWT(std::vector<float> x,
-                float fn = 360,
+                int fn = 100,
                 float f0 = 0.001953125,
                 float f1 = 0.5,
                 float fs = 1,
-                std::string mother_wavelet = "MORLET",
                 int nthreads = 1,
-                std::string optimisation_flags = "ESTIMATE",
-                bool optimize = false) {
+                bool optimize = false,
+                std::string flags = "ESTIMATE",
+                std::string dist = "FCWT_LINFREQS",
+                bool normalization = false,
+                float bandwidth = 2.0) {
   
   int n = x.size(); //signal length
   float twopi = 2*PI;
@@ -24,13 +41,9 @@ Rcpp::List fCWT(std::vector<float> x,
   
   //Create a wavelet object
   Wavelet *wavelet;
-  if (mother_wavelet == "MORLET") {
-    //Initialize a Morlet wavelet having sigma=2.0;
-    Morlet morl(2.0f);
-    wavelet = &morl;
-  } else {
-    throw std::runtime_error("Invalid mother_wavelet. Try 'MORLET'");
-  }
+  //Initialize a Morlet wavelet having sigma=2.0;
+  Morlet morl(bandwidth);
+  wavelet = &morl;
   
   //Create the continuous wavelet transform object
   //constructor(wavelet, nthreads, optplan)
@@ -40,9 +53,10 @@ Rcpp::List fCWT(std::vector<float> x,
   //nthreads  - number of threads to use
   //optplan   - use FFTW optimization plans if true
   //normalization - take extra time to normalize time-frequency matrix
-  FCWT fcwt(wavelet, nthreads, optimize, false);
+  FCWT fcwt(wavelet, nthreads, optimize, normalization);
 
-  if(optimize) fcwt.create_FFT_optimization_plan(n,optimisation_flags);
+  if(optimize) fcwt.create_FFT_optimization_plan(n,flags);
+  
   //Generate frequencies
   //constructor(wavelet, dist, fs, f0, f1, fn)
   //
@@ -53,7 +67,8 @@ Rcpp::List fCWT(std::vector<float> x,
   //f0        - beginning of frequency range
   //f1        - end of frequency range
   //fn        - number of wavelets to generate across frequency range
-  Scales scs(wavelet, FCWT_LINFREQS, fs, f0, f1, fn);
+  Scales scs(wavelet, convert(dist), fs, f0, f1, fn);
+
 
   //Perform a CWT
   //cwt(input, length, output, scales)
@@ -67,6 +82,14 @@ Rcpp::List fCWT(std::vector<float> x,
   ComplexVector scalogram = wrap(tfm);
   scalogram.attr("dim") = Dimension(n, fn);
   
-  return Rcpp::List::create(Rcpp::Named("signal")=x,
-                            Rcpp::Named("scalogram")=scalogram);
+  // Extract frequencies associated with each scale
+  float freqs[fn];
+  scs.getFrequencies(freqs,fn);
+  // Convert to a vector and reverse, by default frequencies are returned sorted high -> low
+  NumericVector outfreqs = rcppRev(NumericVector(freqs,freqs+sizeof(freqs)/sizeof(*freqs)));
+  
+  //NumericVector scales2 = wrap(scales);
+  return Rcpp::List::create(Rcpp::Named("scalogram")=scalogram,
+                            Rcpp::Named("freqs")=outfreqs);
 }
+

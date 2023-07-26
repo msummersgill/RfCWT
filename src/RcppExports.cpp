@@ -11,27 +11,29 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // fCWT
-Rcpp::List fCWT(std::vector<float> x, float fn, float f0, float f1, float fs, std::string mother_wavelet, int nthreads, std::string optimisation_flags, bool optimize);
-RcppExport SEXP _RfCWT_fCWT(SEXP xSEXP, SEXP fnSEXP, SEXP f0SEXP, SEXP f1SEXP, SEXP fsSEXP, SEXP mother_waveletSEXP, SEXP nthreadsSEXP, SEXP optimisation_flagsSEXP, SEXP optimizeSEXP) {
+Rcpp::List fCWT(std::vector<float> x, int fn, float f0, float f1, float fs, int nthreads, bool optimize, std::string flags, std::string dist, bool normalization, float bandwidth);
+RcppExport SEXP _RfCWT_fCWT(SEXP xSEXP, SEXP fnSEXP, SEXP f0SEXP, SEXP f1SEXP, SEXP fsSEXP, SEXP nthreadsSEXP, SEXP optimizeSEXP, SEXP flagsSEXP, SEXP distSEXP, SEXP normalizationSEXP, SEXP bandwidthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<float> >::type x(xSEXP);
-    Rcpp::traits::input_parameter< float >::type fn(fnSEXP);
+    Rcpp::traits::input_parameter< int >::type fn(fnSEXP);
     Rcpp::traits::input_parameter< float >::type f0(f0SEXP);
     Rcpp::traits::input_parameter< float >::type f1(f1SEXP);
     Rcpp::traits::input_parameter< float >::type fs(fsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type mother_wavelet(mother_waveletSEXP);
     Rcpp::traits::input_parameter< int >::type nthreads(nthreadsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type optimisation_flags(optimisation_flagsSEXP);
     Rcpp::traits::input_parameter< bool >::type optimize(optimizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(fCWT(x, fn, f0, f1, fs, mother_wavelet, nthreads, optimisation_flags, optimize));
+    Rcpp::traits::input_parameter< std::string >::type flags(flagsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
+    Rcpp::traits::input_parameter< bool >::type normalization(normalizationSEXP);
+    Rcpp::traits::input_parameter< float >::type bandwidth(bandwidthSEXP);
+    rcpp_result_gen = Rcpp::wrap(fCWT(x, fn, f0, f1, fs, nthreads, optimize, flags, dist, normalization, bandwidth));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RfCWT_fCWT", (DL_FUNC) &_RfCWT_fCWT, 9},
+    {"_RfCWT_fCWT", (DL_FUNC) &_RfCWT_fCWT, 11},
     {NULL, NULL, 0}
 };
 
