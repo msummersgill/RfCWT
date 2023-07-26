@@ -1,0 +1,16 @@
+Package: RfCWT
+Type: Package
+Title: The fast Continuous Wavelet Transform (fCWT)
+Version: 0.1
+Date: 2023-07-25
+Authors@R: c(person("Matt", "Summersgill", role = c("aut", "cre"), email = "matt.summersgill@gmail.com", comment = c(ORCID = "0009-0007-2955-5543")),
+             person("Lukas", "Arts", role = "aut"),
+             person("Egon", "van den Broek", role = "aut"))
+Maintainer: Matt Summersgill <matt.summersgill@gmail.com>
+Description: "The spectral analysis of signals is currently either dominated by the speed-accuracy trade-off or ignores a signal's often non-stationary character. Here we introduce an open-source algorithm to calculate the fast continuous wavelet transform (fCWT). The parallel environment of fCWT separates scale-independent and scale-dependent operations, while utilizing optimized fast Fourier transforms that exploit downsampled wavelets. fCWT is benchmarked for speed against eight competitive algorithms, tested on noise resistance and validated on synthetic electroencephalography and in vivo extracellular local field potential data. fCWT is shown to have the accuracy of CWT, to have 100 times higher spectral resolution than algorithms equal in speed, to be 122 times and 34 times faster than the reference and fastest state-of-the-art implementations and we demonstrate its real-time performance, as confirmed by the real-time analysis ratio. fCWT provides an improved balance between speed and accuracy, which enables real-time, wide-band, high-quality, time-frequency analysis of non-stationary noisy signals."
+References: "This package ports code imlemented in https://github.com/fastlib/fCWT."
+License: Apache 2.0
+Imports: Rcpp (>= 1.0.11)
+LinkingTo: Rcpp
+SystemRequirements: FFTW (>=3.3.10)
+RoxygenNote: 7.2.3
