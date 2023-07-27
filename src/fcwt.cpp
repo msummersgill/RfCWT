@@ -388,9 +388,12 @@ void FCWT::load_FFT_optimization_plan() {
     
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", newsize, threads);
-    
-    if(!fftwf_import_wisdom_from_filename(file_for)) {
-      std::cout << "WARNING: Optimization scheme '" << file_for << "' was not found, fallback to calculation without optimization." << std::endl;
+    if(!fftwf_import_system_wisdom()) {
+      std::cout << "WARNING:No system wisdom found in default location - /etc/fftw/wisdom" << std::endl;
+      
+      if(!fftwf_import_wisdom_from_filename(file_for)) {
+        std::cout << "WARNING: Optimization scheme '" << file_for << "' was not found, fallback to calculation without optimization." << std::endl;
+      }
     }
   }
 }
