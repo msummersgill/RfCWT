@@ -213,7 +213,7 @@ void FCWT::daughter_wavelet_multiplication(fftwf_complex *input, fftwf_complex *
   int athreads = min(threads,max(1,endpoint4/16));
   int batchsize = (endpoint4/athreads);
   int s4 = (isize>>2)-1;
-  
+
 #ifndef SINGLE_THREAD
 #pragma omp parallel for
 #endif
@@ -340,15 +340,20 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
     sprintf(file_for, "n%d_t%d.wis", n, threads);
     
     std::cout << "Calculating optimal scheme for forward FFT with N:" << n << std::endl;
+
     p_for = fftwf_plan_dft_r2c_1d(n, dat, O1, flags);
     
     std::cout << "Calculating optimal scheme for backward FFT with N:" << n << std::endl;
-    
+
     p_back = fftwf_plan_dft_1d(n, O1, out, FFTW_BACKWARD, flags);
     
-    fftwf_export_wisdom_to_filename(file_for);
-    
-    std::cout << "Created Wisdom File: " << file_for << std::endl;
+    if(!fftwf_export_wisdom_to_filename(file_for)){
+      std::cout << "Failed to create wisdom file: " << file_for << std::endl;
+    }
+    //https://afni.nimh.nih.gov/afni/doc/source/fftw__setup_8c.html
+    // char *w = fftwf_export_wisdom_to_string();
+    // std::cout << "Raw Wisdom: " << w << std::endl;
+    // fftw_free(w) ;
     
     free(dat);
     fftwf_free(O1);
@@ -389,11 +394,10 @@ void FCWT::load_FFT_optimization_plan() {
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", newsize, threads);
     if(!fftwf_import_system_wisdom()) {
-      std::cout << "WARNING:No system wisdom found in default location - /etc/fftw/wisdom" << std::endl;
-      
-      if(!fftwf_import_wisdom_from_filename(file_for)) {
-        std::cout << "WARNING: Optimization scheme '" << file_for << "' was not found, fallback to calculation without optimization." << std::endl;
-      }
+      std::cout << "WARNING:No system wisdom found in default location - /etc/fftw/wisdomf" << std::endl;
+    }
+    if(!fftwf_import_wisdom_from_filename(file_for)) {
+      std::cout << "WARNING: Optimization scheme '" << file_for << "' was not found, fallback to calculation without optimization." << std::endl;
     }
   }
 }
@@ -504,7 +508,6 @@ void FCWT::cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales
   fftwf_execute(p);
   fftwf_destroy_plan(p);
   free(input);
-  
   pinv = fftwf_plan_dft_1d(newsize, O1, (fftwf_complex*)poutput, FFTW_BACKWARD, FFTW_ESTIMATE);
   
   //Generate mother wavelet function
