@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // fCWT
-Rcpp::List fCWT(std::vector<float> x, int fn, float f0, float f1, float fs, int nthreads, bool optimize, std::string flags, std::string dist, bool normalization, float bandwidth, bool newplan);
-RcppExport SEXP _RfCWT_fCWT(SEXP xSEXP, SEXP fnSEXP, SEXP f0SEXP, SEXP f1SEXP, SEXP fsSEXP, SEXP nthreadsSEXP, SEXP optimizeSEXP, SEXP flagsSEXP, SEXP distSEXP, SEXP normalizationSEXP, SEXP bandwidthSEXP, SEXP newplanSEXP) {
+Rcpp::List fCWT(std::vector<float> x, int fn, float f0, float f1, float fs, int nthreads, bool optimize, std::string flags, std::string dist, bool normalization, float bandwidth);
+RcppExport SEXP _RfCWT_fCWT(SEXP xSEXP, SEXP fnSEXP, SEXP f0SEXP, SEXP f1SEXP, SEXP fsSEXP, SEXP nthreadsSEXP, SEXP optimizeSEXP, SEXP flagsSEXP, SEXP distSEXP, SEXP normalizationSEXP, SEXP bandwidthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,14 +27,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
     Rcpp::traits::input_parameter< bool >::type normalization(normalizationSEXP);
     Rcpp::traits::input_parameter< float >::type bandwidth(bandwidthSEXP);
-    Rcpp::traits::input_parameter< bool >::type newplan(newplanSEXP);
-    rcpp_result_gen = Rcpp::wrap(fCWT(x, fn, f0, f1, fs, nthreads, optimize, flags, dist, normalization, bandwidth, newplan));
+    rcpp_result_gen = Rcpp::wrap(fCWT(x, fn, f0, f1, fs, nthreads, optimize, flags, dist, normalization, bandwidth));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RfCWT_fCWT", (DL_FUNC) &_RfCWT_fCWT, 12},
+    {"_RfCWT_fCWT", (DL_FUNC) &_RfCWT_fCWT, 11},
     {NULL, NULL, 0}
 };
 

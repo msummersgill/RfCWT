@@ -313,7 +313,7 @@ void FCWT::daughter_wavelet_multiplication(fftwf_complex *input, fftwf_complex *
 void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
   
   int nt = find2power(maxsize);
-
+  
   if(nt <= 10) {
     std::cerr << "Maxsize is too small (<=1024)... please use a larger number" << std::endl;
   }
@@ -321,39 +321,35 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
   for(int i=11; i<=nt; i++) {
     int n = 1 << i;
     
-    float *dat = (float*)malloc(sizeof(float)*n);
-    fftwf_complex *O1 = fftwf_alloc_complex(n);
-    fftwf_complex *out = fftwf_alloc_complex(n);
-    
 #ifndef SINGLE_THREAD
     omp_set_num_threads(threads);
-
     fftwf_init_threads();
     fftwf_plan_with_nthreads(omp_get_max_threads());
 #endif
     
-    fftwf_plan p_for;
-    fftwf_plan p_back;
-    
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", n, threads);
-  
-    p_for = fftwf_plan_dft_r2c_1d(n, dat, O1, flags);
     
-    p_back = fftwf_plan_dft_1d(n, O1, out, FFTW_BACKWARD, flags);
-    
-    fftwf_export_wisdom_to_filename(file_for);
-    
-    //https://afni.nimh.nih.gov/afni/doc/source/fftw__setup_8c.html
-    // char *w = fftwf_export_wisdom_to_string();
-    // std::cout << "Raw Wisdom: " << w << std::endl;
-    // fftw_free(w) ;
-    
-    free(dat);
-    fftwf_free(O1);
-    fftwf_free(out);
-    
-    std::cout << "Optimization schemes T:"<< omp_get_max_threads() <<"for N: " << n << " have been calculated. Next time you use fCWT it will automatically choose the right optimization scheme based on number of threads and signal length." << std::endl;
+    if(!fftwf_import_wisdom_from_filename(file_for)) {
+      
+      float *dat = (float*)malloc(sizeof(float)*n);
+      fftwf_complex *O1 = fftwf_alloc_complex(n);
+      fftwf_complex *out = fftwf_alloc_complex(n);
+      
+      fftwf_plan p_for;
+      fftwf_plan p_back;
+      
+      p_for = fftwf_plan_dft_r2c_1d(n, dat, O1, flags);
+      
+      p_back = fftwf_plan_dft_1d(n, O1, out, FFTW_BACKWARD, flags);
+      
+      fftwf_export_wisdom_to_filename(file_for);
+      
+      free(dat);
+      fftwf_free(O1);
+      fftwf_free(out);
+      std::cout << "Optimization schemes T:"<< omp_get_max_threads() <<"for N: " << n << " have been calculated. Next time you use fCWT it will automatically choose the right optimization scheme based on number of threads and signal length." << std::endl;
+    }
   }
 }
 void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
@@ -374,16 +370,6 @@ void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
   
   create_FFT_optimization_plan(maxsize, flag);
 }
-
- bool FCWT::check_FFT_optimization_plan(int n) {
-   const int nt = find2power(n);
-   const int newsize = 1 << nt;
-   char file_for[50];
-   sprintf(file_for, "n%d_t%d.wis", newsize, threads);
-   //fftwf_import_wisdom_from_filename returns 1 if successful
-   return(fftwf_import_wisdom_from_filename(file_for));
-   
- }
 
 void FCWT::load_FFT_optimization_plan() {
   const int nt = find2power(size);

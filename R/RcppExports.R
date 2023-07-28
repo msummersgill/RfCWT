@@ -14,11 +14,10 @@
 #' @param dist Distribution of frequency bands across the range. Should be one of "FCWT_LINSCALES","FCWT_LOGSCALES", or "FCWT_LINFREQS"
 #' @param normalization Whether or not the output scalogram should be normalized from range 0-1
 #' @param bandwidth Frequency bandwidth of the mother wavelet to be used
-#' @param newplan Set to `TRUE` to force a new plan even if one exists
 #' @return List object with a complex matrix scalogram and the frequencies associated with each band
 NULL
 
-fCWT <- function(x, fn = 100L, f0 = 0.001953125, f1 = 0.5, fs = 1, nthreads = 1L, optimize = FALSE, flags = "FFTW_MEASURE", dist = "FCWT_LINFREQS", normalization = FALSE, bandwidth = 2.0, newplan = FALSE) {
-    .Call(`_RfCWT_fCWT`, x, fn, f0, f1, fs, nthreads, optimize, flags, dist, normalization, bandwidth, newplan)
+fCWT <- function(x, fn = 100L, f0 = 0.001953125, f1 = 0.5, fs = 1, nthreads = 1L, optimize = FALSE, flags = "FFTW_MEASURE", dist = "FCWT_LINFREQS", normalization = FALSE, bandwidth = 2.0) {
+    .Call(`_RfCWT_fCWT`, x, fn, f0, f1, fs, nthreads, optimize, flags, dist, normalization, bandwidth)
 }
 
