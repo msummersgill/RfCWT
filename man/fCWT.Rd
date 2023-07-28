@@ -23,6 +23,8 @@
 \item{normalization}{Whether or not the output scalogram should be normalized from range 0-1}
 
 \item{bandwidth}{Frequency bandwidth of the mother wavelet to be used}
+
+\item{newplan}{Set to `TRUE` to force a new plan even if one exists}
 }
 \value{
 List object with a complex matrix scalogram and the frequencies associated with each band

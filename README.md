@@ -37,34 +37,6 @@ sudo make install
 
 ```
 
-### FFTW Wisdom Generation
-
-In addition, using the [`fftwf-wisdom`](https://www.fftw.org/fftw-wisdom.1.html) utility to pre-generate plans that can be used system wide can improve performance at run time. Generating the full canonical set of cases using `fftw-wisdom -v -c -o wisdom` takes many hours, but for the purposes of this library, we only need a subset of plans.
-
-`RfCWT::GenerateWisdom()` is provided as a convenience function to generate the `fftwf-wisdom` commands for a defined set of threads. By default, the commands are printed to the console output, but specifying `Execute = TRUE` will use `system(..., wait = FALSE)` to execute them directly in parallel. Upon completion, the files can all be combined using the output of `RfCWT::CombineWisdom()`.
-
-```r
-RfCWT::GenerateWisdom(Threads = c(2L,4L,8L,16L), Execute = FALSE)
-RfCWT::CombineWisdom(Threads = c(2L,4L,8L,16L), Execute = FALSE) 
-
-```
-Output of these commands is as follows. Upon completion, the user will need to generate the default directory for FFTW wisdom - `/etc/fftw` - if it does not exist, and then copy the output to this location.
-
-```
-fftwf-wisdom -p -v -T 1 -o wisdomf1 rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -p -v -T 2 -w wisdomf2 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -p -v -T 4 -w wisdomf4 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -p -v -T 8 -w wisdomf8 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -p -v -T 16 -w wisdomf16 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-
-fftwf-wisdom -v -T 1 -o wisdomf -w wisdomf1 -w wisdomf2 -w wisdomf4 -w wisdomf8 -w wisdomf16
-
-
-sudo mkdir /etc/fftw
-sudo chmod 777 /etc/fftw 
-mv wisdomf /etc/fftw/wisdomf
-
-```
 
 ### Installing the Package
 
@@ -140,7 +112,41 @@ timeit.timeit('fcwt_obj.cwt(sig_100k, scales3000, output_100k_3000)', number=10,
 
 ## Known Issues
 
-+ Plans are not being successfully saved after generation on _one_ of my test machines - Ubuntu 20.04
+
++ Plans are not being successfully saved after generation on _one_ of my test machines - an Ubuntu 20.04 running on VMWare. Installing 
++ Use of the FFTW default wisdom cache could add efficiencies and avoid needing to regenerate plans any time the working directory is changed, but is not currently working.
+
+
+### FFTW Wisdom Generation
+
+Eventually, my goal is to leverage the default FFTW default wisdom cache, but at this time, the functionality implemented in `fCWT` using individual files in the working directory is the only way of persisting planning. 
+
+In addition, using the [`fftwf-wisdom`](https://www.fftw.org/fftw-wisdom.1.html) utility to pre-generate plans that can be used system wide can improve performance at run time. Generating the full canonical set of cases using `fftw-wisdom -v -c -o wisdom` takes many hours, but for the purposes of this library, we only need a subset of plans.
+
+`RfCWT::GenerateWisdom()` is provided as a convenience function to generate the `fftwf-wisdom` commands for a defined set of threads. By default, the commands are printed to the console output, but specifying `Execute = TRUE` will use `system(..., wait = FALSE)` to execute them directly in parallel. Upon completion, the files can all be combined using the output of `RfCWT::CombineWisdom()`.
+
+```r
+RfCWT::GenerateWisdom(Threads = c(2L,4L,8L,16L), Execute = FALSE)
+RfCWT::CombineWisdom(Threads = c(2L,4L,8L,16L), Execute = FALSE) 
+
+```
+Output of these commands is as follows. Upon completion, the user will need to generate the default directory for FFTW wisdom - `/etc/fftw` - if it does not exist, and then copy the output to this location.
+
+```
+fftwf-wisdom -p -v -T 1 -o wisdomf1 rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 2 -w wisdomf2 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 4 -w wisdomf4 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 8 -w wisdomf8 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 16 -w wisdomf16 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+
+fftwf-wisdom -v -T 1 -o wisdomf -w wisdomf1 -w wisdomf2 -w wisdomf4 -w wisdomf8 -w wisdomf16
+
+
+sudo mkdir /etc/fftw
+sudo chmod 777 /etc/fftw 
+mv wisdomf /etc/fftw/wisdomf
+
+```
 
 
 ## Troubleshooting

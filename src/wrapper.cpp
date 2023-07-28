@@ -25,6 +25,7 @@ SCALETYPE convert(std::string x) {
 //' @param dist Distribution of frequency bands across the range. Should be one of "FCWT_LINSCALES","FCWT_LOGSCALES", or "FCWT_LINFREQS"
 //' @param normalization Whether or not the output scalogram should be normalized from range 0-1
 //' @param bandwidth Frequency bandwidth of the mother wavelet to be used
+//' @param newplan Set to `TRUE` to force a new plan even if one exists
 //' @return List object with a complex matrix scalogram and the frequencies associated with each band
 
 // [[Rcpp::export]]
@@ -39,7 +40,7 @@ Rcpp::List fCWT(std::vector<float> x,
                 std::string dist = "FCWT_LINFREQS",
                 bool normalization = false,
                 float bandwidth = 2.0,
-                bool newplan = true) {
+                bool newplan = false) {
   
   int n = x.size(); //signal length
 
@@ -62,12 +63,12 @@ Rcpp::List fCWT(std::vector<float> x,
   //normalization - take extra time to normalize time-frequency matrix
   FCWT fcwt(wavelet, nthreads, optimize, normalization);
 
-  //if(optimize){
-  //  if(!fcwt.check_FFT_optimization_plan()) fcwt.create_FFT_optimization_plan(n,flags);
-  //}
-  // Behavior of new method "check_FFT_optimization_plan" isn't working as planned
+  // TODO: new method "check_FFT_optimization_plan" isn't working like I'd hoped it would.
   // Adding in a manual override for the user to specify that a plan already exists here
-  if(optimize && newplan) fcwt.create_FFT_optimization_plan(n,flags);
+  //if(optimize && newplan) fcwt.create_FFT_optimization_plan(n,flags);
+  if(optimize){
+    if(!fcwt.check_FFT_optimization_plan() || newplan) fcwt.create_FFT_optimization_plan(n,flags);
+  }
   
   //Generate frequencies
   //constructor(wavelet, dist, fs, f0, f1, fn)

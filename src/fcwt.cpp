@@ -347,6 +347,8 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
 
     p_back = fftwf_plan_dft_1d(n, O1, out, FFTW_BACKWARD, flags);
     
+    fftwf_export_wisdom_to_filename(file_for);
+    
     //https://afni.nimh.nih.gov/afni/doc/source/fftw__setup_8c.html
     // char *w = fftwf_export_wisdom_to_string();
     // std::cout << "Raw Wisdom: " << w << std::endl;
@@ -378,15 +380,15 @@ void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
   create_FFT_optimization_plan(maxsize, flag);
 }
 
-bool FCWT::check_FFT_optimization_plan() {
-  const int nt = find2power(size);
-  const int newsize = 1 << nt;
-  char file_for[50];
-  sprintf(file_for, "n%d_t%d.wis", newsize, threads);
-  //fftwf_import_wisdom_from_filename returns 1 if successful
-  return(fftwf_import_wisdom_from_filename(file_for));
-  
-}
+ bool FCWT::check_FFT_optimization_plan() {
+   const int nt = find2power(size);
+   const int newsize = 1 << nt;
+   char file_for[50];
+   sprintf(file_for, "n%d_t%d.wis", newsize, threads);
+   //fftwf_import_wisdom_from_filename returns 1 if successful
+   return(fftwf_import_wisdom_from_filename(file_for));
+   
+ }
 
 void FCWT::load_FFT_optimization_plan() {
   const int nt = find2power(size);
@@ -400,9 +402,10 @@ void FCWT::load_FFT_optimization_plan() {
     
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", newsize, threads);
-    if(!fftwf_import_system_wisdom()) {
+    // TODO: Add support for system wisdom cache
+    //if(!fftwf_import_system_wisdom()) {
     //  std::cout << "WARNING:No system wisdom found in default location - /etc/fftw/wisdomf" << std::endl;
-    }
+    //}
     if(!fftwf_import_wisdom_from_filename(file_for)) {
       std::cout << "WARNING: Optimization scheme '" << file_for << "' was not found, fallback to calculation without optimization." << std::endl;
     }
