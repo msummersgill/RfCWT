@@ -38,7 +38,8 @@ Rcpp::List fCWT(std::vector<float> x,
                 std::string flags = "FFTW_MEASURE",
                 std::string dist = "FCWT_LINFREQS",
                 bool normalization = false,
-                float bandwidth = 2.0) {
+                float bandwidth = 2.0,
+                bool newplan = true) {
   
   int n = x.size(); //signal length
 
@@ -61,9 +62,13 @@ Rcpp::List fCWT(std::vector<float> x,
   //normalization - take extra time to normalize time-frequency matrix
   FCWT fcwt(wavelet, nthreads, optimize, normalization);
 
-  if(optimize){
-    if(!fcwt.check_FFT_optimization_plan()) fcwt.create_FFT_optimization_plan(n,flags);
-  }
+  //if(optimize){
+  //  if(!fcwt.check_FFT_optimization_plan()) fcwt.create_FFT_optimization_plan(n,flags);
+  //}
+  // Behavior of new method "check_FFT_optimization_plan" isn't working as planned
+  // Adding in a manual override for the user to specify that a plan already exists here
+  if(optimize && newplan) fcwt.create_FFT_optimization_plan(n,flags);
+  
   //Generate frequencies
   //constructor(wavelet, dist, fs, f0, f1, fn)
   //

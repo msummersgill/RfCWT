@@ -86,7 +86,6 @@ R CMD INSTALL . --preclean --no-multiarch --with-keep.source
 
 Comparing to the `pycwt` port, results indicate relatively high performance even without using FFTW optimization. _(In it's current state, I have yet to get to the bottom of troubleshooting why generated wisdom files are empty, nor is the system wisdom file detected from `/etc/fftw/wisdomf`)_
 
-Additionally, `pcwt` timings do not include time spent allocating memory, initializing the wavelet, scales, fcwt object, or creating optimization plans. Bundling these steps into a single command adds some additional overhead for this R equivalent for benchmarking purposes.
 
 ```r
 set.seed(1234)
@@ -96,7 +95,7 @@ Length_1e5 <- rnorm(1e5)
 
 opt <- FALSE
 microbenchmark::microbenchmark(
-  `10k-300` = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  1L,fn =  300,fs = 100,optimize = opt),
+  `10k-300` = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  8L,fn =  300,fs = 100,optimize = opt),
   `100k-300` = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads =  8L,fn =  300,fs = 100,optimize = opt),
   `10k-3000` = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  8L,fn = 3000,fs = 100,optimize = opt),
   `100k-3000` = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads =  8L,fn = 3000,fs = 100,optimize = opt),
@@ -107,13 +106,15 @@ microbenchmark::microbenchmark(
 ```
 Unit: seconds
       expr       min        lq      mean    median        uq       max neval
-   10k-300 0.7275989 0.7275989 0.7275989 0.7275989 0.7275989 0.7275989     1
-  100k-300 0.7498486 0.7498486 0.7498486 0.7498486 0.7498486 0.7498486     1
-  10k-3000 1.7068944 1.7068944 1.7068944 1.7068944 1.7068944 1.7068944     1
- 100k-3000 7.5409973 7.5409973 7.5409973 7.5409973 7.5409973 7.5409973     1
+   10k-300 0.1802968 0.1802968 0.1802968 0.1802968 0.1802968 0.1802968     1
+  100k-300 0.7537258 0.7537258 0.7537258 0.7537258 0.7537258 0.7537258     1
+  10k-3000 1.6184668 1.6184668 1.6184668 1.6184668 1.6184668 1.6184668     1
+ 100k-3000 7.6223623 7.6223623 7.6223623 7.6223623 7.6223623 7.6223623     1
 ```
 
 For reference, executing the [pycwt benchmark notebook](github.com/fastlib/fCWT/blob/main/benchmark.ipynb) on my machine _(Ubuntu 20.04 hosted by VMWare with Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz - not exactly a high performance computing environment)_ gives the following results.
+
+Additionally, `pcwt` timings do not include time spent allocating memory, initializing the wavelet, scales, fcwt object, or creating optimization plans. Bundling these steps into a single command adds some additional overhead for this R equivalent for benchmarking purposes.
 
 ```python
 ## Majority of benchmark code removed for the sake of brevity
@@ -139,7 +140,7 @@ timeit.timeit('fcwt_obj.cwt(sig_100k, scales3000, output_100k_3000)', number=10,
 
 ## Known Issues
 
-+ Plans are not being succesfully saved after generation
++ Plans are not being successfully saved after generation on _one_ of my test machines - Ubuntu 20.04
 
 
 ## Troubleshooting
