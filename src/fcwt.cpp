@@ -348,7 +348,7 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
       free(dat);
       fftwf_free(O1);
       fftwf_free(out);
-      std::cout << "Optimization schemes T:"<< omp_get_max_threads() <<"for N: " << n << " have been calculated. Next time you use fCWT it will automatically choose the right optimization scheme based on number of threads and signal length." << std::endl;
+      std::cout << "Optimization schemes T:"<< omp_get_max_threads() <<" for N: " << n << " have been calculated. Next time you use fCWT it will automatically choose the right optimization scheme based on number of threads and signal length." << std::endl;
     }
   }
 }
@@ -383,7 +383,9 @@ void FCWT::load_FFT_optimization_plan() {
     
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", newsize, threads);
-    // TODO: Add support for system wisdom cache
+    // TODO: Add more robust support for system wisdom cache
+    fftwf_import_system_wisdom();
+    //https://github.com/FFTW/fftw3/issues/176
     //if(!fftwf_import_system_wisdom()) {
     //  std::cout << "WARNING:No system wisdom found in default location - /etc/fftw/wisdomf" << std::endl;
     //}
