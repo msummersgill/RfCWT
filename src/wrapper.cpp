@@ -67,7 +67,7 @@ Rcpp::List fCWT(std::vector<float> x,
   // Adding in a manual override for the user to specify that a plan already exists here
   //if(optimize && newplan) fcwt.create_FFT_optimization_plan(n,flags);
   if(optimize){
-    if(!fcwt.check_FFT_optimization_plan() || newplan) fcwt.create_FFT_optimization_plan(n,flags);
+    if(fcwt.check_FFT_optimization_plan(n) || newplan) fcwt.create_FFT_optimization_plan(n,flags);
   }
   
   //Generate frequencies

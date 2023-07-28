@@ -128,7 +128,7 @@ public:
     threads(pthreads), 
     use_optimalization_schemes(puse_optimalization_schemes),
     use_normalization(puse_normalization) {};
-  bool FCWT_LIBRARY_API check_FFT_optimization_plan();
+  bool FCWT_LIBRARY_API check_FFT_optimization_plan(int n);
   void FCWT_LIBRARY_API create_FFT_optimization_plan(int pmaxsize, int poptimizationflags);
   void FCWT_LIBRARY_API create_FFT_optimization_plan(int pmaxsize, string poptimizationflags);
   void FCWT_LIBRARY_API cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales);

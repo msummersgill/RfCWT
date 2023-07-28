@@ -327,8 +327,7 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
     
 #ifndef SINGLE_THREAD
     omp_set_num_threads(threads);
-    //std::cout << "Threads:" << omp_get_max_threads() << std::endl;
-    
+
     fftwf_init_threads();
     fftwf_plan_with_nthreads(omp_get_max_threads());
 #endif
@@ -338,13 +337,9 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
     
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", n, threads);
-    
-    //std::cout << "Calculating optimal scheme for forward FFT with N:" << n << std::endl;
-
+  
     p_for = fftwf_plan_dft_r2c_1d(n, dat, O1, flags);
     
-    //std::cout << "Calculating optimal scheme for backward FFT with N:" << n << std::endl;
-
     p_back = fftwf_plan_dft_1d(n, O1, out, FFTW_BACKWARD, flags);
     
     fftwf_export_wisdom_to_filename(file_for);
@@ -358,7 +353,7 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
     fftwf_free(O1);
     fftwf_free(out);
     
-    std::cout << "Optimization schemes for N: " << n << " have been calculated. Next time you use fCWT it will automatically choose the right optimization scheme based on number of threads and signal length." << std::endl;
+    std::cout << "Optimization schemes T:"<< omp_get_max_threads() <<"for N: " << n << " have been calculated. Next time you use fCWT it will automatically choose the right optimization scheme based on number of threads and signal length." << std::endl;
   }
 }
 void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
@@ -380,8 +375,8 @@ void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
   create_FFT_optimization_plan(maxsize, flag);
 }
 
- bool FCWT::check_FFT_optimization_plan() {
-   const int nt = find2power(size);
+ bool FCWT::check_FFT_optimization_plan(int n) {
+   const int nt = find2power(n);
    const int newsize = 1 << nt;
    char file_for[50];
    sprintf(file_for, "n%d_t%d.wis", newsize, threads);
