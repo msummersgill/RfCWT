@@ -41,31 +41,32 @@ sudo make install
 
 In addition, using the [`fftwf-wisdom`](https://www.fftw.org/fftw-wisdom.1.html) utility to pre-generate plans that can be used system wide can improve performance at run time. Generating the full canonical set of cases using `fftw-wisdom -v -c -o wisdom` takes many hours, but for the purposes of this library, we only need a subset of plans.
 
-`RfCWT::GenerateWisdom()` is provided as a convenience function to generate the `fftwf-wisdom` commands for a defined set of threads. By default, the commands are printed to the console output, but specifying `Execute = TRUE` will use `system()` to execute them directly in sequence.
+`RfCWT::GenerateWisdom()` is provided as a convenience function to generate the `fftwf-wisdom` commands for a defined set of threads. By default, the commands are printed to the console output, but specifying `Execute = TRUE` will use `system(..., wait = FALSE)` to execute them directly in parallel. Upon completion, the files can all be combined using the output of `RfCWT::CombineWisdom()`.
 
 ```r
-RfCWT::GenerateWisdom(Threads = c(2L,4L,8L,16L,32L), Execute = FALSE) 
+RfCWT::GenerateWisdom(Threads = c(2L,4L,8L,16L), Execute = FALSE)
+RfCWT::CombineWisdom(Threads = c(2L,4L,8L,16L), Execute = FALSE) 
 
 ```
-
-The first command utilizing one thread generates a new file named `wisdomf`. For each subsequent run, the output of the previous execution is concatenated with the prior result, so that the final file will include plans for all thread counts specified.
+Output of these commands is as follows. Upon completion, the user will need to generate the default directory for FFTW wisdom - `/etc/fftw` - if it does not exist, and then copy the output to this location.
 
 ```
+fftwf-wisdom -p -v -T 1 -o wisdomf1 rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 2 -w wisdomf2 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 4 -w wisdomf4 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 8 -w wisdomf8 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+fftwf-wisdom -p -v -T 16 -w wisdomf16 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
+
+fftwf-wisdom -v -T 1 -o wisdomf -w wisdomf1 -w wisdomf2 -w wisdomf4 -w wisdomf8 -w wisdomf16
+
+
 sudo mkdir /etc/fftw
 sudo chmod 777 /etc/fftw 
-
-fftwf-wisdom -v -T 1 -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -v -T 2 -w wisdomf -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -v -T 4 -w wisdomf -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -v -T 8 -w wisdomf -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -v -T 16 -w wisdomf -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-fftwf-wisdom -v -T 32 -w wisdomf -o wisdomf rof2048 cof2048 rob2048 cob2048 rof4096 cof4096 rob4096 cob4096 rof8192 cof8192 rob8192 cob8192 rof16384 cof16384 rob16384 cob16384 rof32768 cof32768 rob32768 cob32768 rof65536 cof65536 rob65536 cob65536 rof131072 cof131072 rob131072 cob131072 rof262144 cof262144 rob262144 cob262144 rof524288 cof524288 rob524288 cob524288 rof1048576 cof1048576 rob1048576 cob1048576
-
 mv wisdomf /etc/fftw/wisdomf
+
 ```
 
 ### Installing the Package
-
 
 This package has not been submitted to CRAN. For now, the `remotes` package can be used to install directly from this repository, or you can clone and install from local source yourself.
 
@@ -78,16 +79,14 @@ In the event the package fails to build out of the box, cloning and building fro
 ```bash
 git clone https://github.com/msummersgill/RfCWT.git
 cd RfCWT
-R CMD INSTALL --preclean --no-multiarch --with-keep.source RfCWT
+R CMD INSTALL . --preclean --no-multiarch --with-keep.source
 ```
 
 ## Benchmarking
 
 Comparing to the `pycwt` port, results indicate relatively high performance even without using FFTW optimization. _(In it's current state, I have yet to get to the bottom of troubleshooting why generated wisdom files are empty, nor is the system wisdom file detected from `/etc/fftw/wisdomf`)_
 
-Additionally, `pcwt` timings do not include time spent allocating memory, initializing the wavelet, scales, fcwt object, or creating optimization plans - a follow up comparing apples to apples is in order after sorting out the FFTW optimiziation gremlins.
-
-### R Package RfCWT
+Additionally, `pcwt` timings do not include time spent allocating memory, initializing the wavelet, scales, fcwt object, or creating optimization plans. Bundling these steps into a single command adds some additional overhead for this R equivalent for benchmarking purposes.
 
 ```r
 set.seed(1234)
@@ -97,80 +96,36 @@ Length_1e5 <- rnorm(1e5)
 
 opt <- FALSE
 microbenchmark::microbenchmark(
-  Len_1e4__300__8T = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  8L,fn =  300,fs = 100,optimize = opt),
-  Len_1e5__300__8T = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads =  8L,fn =  300,fs = 100,optimize = opt),
-  Len_1e4_3000__8T = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  8L,fn = 3000,fs = 100,optimize = opt),
-  Len_1e5_3000__8T = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads =  8L,fn = 3000,fs = 100,optimize = opt),
+  `10k-300` = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  1L,fn =  300,fs = 100,optimize = opt),
+  `100k-300` = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads =  8L,fn =  300,fs = 100,optimize = opt),
+  `10k-3000` = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads =  8L,fn = 3000,fs = 100,optimize = opt),
+  `100k-3000` = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads =  8L,fn = 3000,fs = 100,optimize = opt),
   times = 1,unit = "seconds"
 ) 
 ```
 
 ```
 Unit: seconds
-             expr       min        lq      mean    median        uq       max neval
- Len_1e4__300__8T 0.1549342 0.1641539 0.2348587 0.1710403 0.1822440 0.8128643    10
- Len_1e5__300__8T 0.7308875 0.7537663 0.9020168 0.7760170 0.8175905 1.5159758    10
- Len_1e4_3000__8T 1.8527034 1.8659876 1.9492253 1.8879792 1.9412159 2.4763849    10
- Len_1e5_3000__8T 7.6543519 7.7968665 7.8654963 7.8609172 7.8880797 8.2094135    10
+      expr       min        lq      mean    median        uq       max neval
+   10k-300 0.7275989 0.7275989 0.7275989 0.7275989 0.7275989 0.7275989     1
+  100k-300 0.7498486 0.7498486 0.7498486 0.7498486 0.7498486 0.7498486     1
+  10k-3000 1.7068944 1.7068944 1.7068944 1.7068944 1.7068944 1.7068944     1
+ 100k-3000 7.5409973 7.5409973 7.5409973 7.5409973 7.5409973 7.5409973     1
 ```
 
-### Python package `pycwt`
+For reference, executing the [pycwt benchmark notebook](github.com/fastlib/fCWT/blob/main/benchmark.ipynb) on my machine _(Ubuntu 20.04 hosted by VMWare with Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz - not exactly a high performance computing environment)_ gives the following results.
 
 ```python
-import fcwt
-import numpy as np
-import timeit
-
-fs = 100
-n10k = 10000
-n100k = 100000
-
-#Generate signals
-sig_100k = np.sin(2*np.pi*((0.1+(2*np.arange(n100k))/n100k)*(np.arange(n100k)/fs)))
-sig_10k = np.sin(2*np.pi*((0.1+(2*np.arange(n10k))/n10k)*(np.arange(n10k)/fs)))
-
-f0 = 1
-f1 = 101
-fn300 = 300
-fn3000 = 3000
-
-#make sure signal is a numpy float array
-sig_100k = np.array(sig_100k, dtype=np.float32)
-sig_10k = np.array(sig_10k, dtype=np.float32)
-
-#initialize Morlet wavelet with wavelet parameter (sigma) 2.0
-morl = fcwt.Morlet(2.0)
-
-#initialize scales
-scales300 = fcwt.Scales(morl, fcwt.FCWT_LINFREQS, fs, f0, f1, fn300)
-scales3000 = fcwt.Scales(morl, fcwt.FCWT_LINFREQS, fs, f0, f1, fn3000)
-
-#initialize fcwt
-nthreads = 8
-use_optimization_plan = True
-use_normalization = False
-fcwt_obj = fcwt.FCWT(morl, nthreads, use_optimization_plan, use_normalization)
-
-fcwt_obj.create_FFT_optimization_plan(100000,"FFTW_MEASURE")
-
-#initialize output array
-output_10k_300 = np.zeros((fn300,sig_10k.size), dtype=np.complex64)
-output_100k_300 = np.zeros((fn300,sig_100k.size), dtype=np.complex64)
-output_10k_3000 = np.zeros((fn3000,sig_100k.size), dtype=np.complex64)
-output_100k_3000 = np.zeros((fn3000,sig_100k.size), dtype=np.complex64)
+## Majority of benchmark code removed for the sake of brevity
 
 #10k-300
-a = timeit.timeit('fcwt_obj.cwt(sig_10k, scales300, output_10k_300)', number=10, globals=globals())
+timeit.timeit('fcwt_obj.cwt(sig_10k, scales300, output_10k_300)', number=10, globals=globals())
 #100k-300
-b = timeit.timeit('fcwt_obj.cwt(sig_100k, scales300, output_100k_300)', number=10, globals=globals())
+timeit.timeit('fcwt_obj.cwt(sig_100k, scales300, output_100k_300)', number=10, globals=globals())
 #10k-3000
-c = timeit.timeit('fcwt_obj.cwt(sig_10k, scales3000, output_10k_3000)', number=10, globals=globals())
+timeit.timeit('fcwt_obj.cwt(sig_10k, scales3000, output_10k_3000)', number=10, globals=globals())
 #100k-3000
-d = timeit.timeit('fcwt_obj.cwt(sig_100k, scales3000, output_100k_3000)', number=10, globals=globals())
-print("10k-300: ", a/10, "seconds")
-print("100k-300: ", b/10, "seconds")
-print("10k-3000: ", c/10, "seconds")
-print("100k-3000: ", d/10, "seconds")
+timeit.timeit('fcwt_obj.cwt(sig_100k, scales3000, output_100k_3000)', number=10, globals=globals())
 ```
 
 ```

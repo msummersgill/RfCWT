@@ -61,8 +61,9 @@ Rcpp::List fCWT(std::vector<float> x,
   //normalization - take extra time to normalize time-frequency matrix
   FCWT fcwt(wavelet, nthreads, optimize, normalization);
 
-  if(optimize) fcwt.create_FFT_optimization_plan(n,flags);
-  
+  if(optimize){
+    if(!fcwt.check_FFT_optimization_plan()) fcwt.create_FFT_optimization_plan(n,flags);
+  }
   //Generate frequencies
   //constructor(wavelet, dist, fs, f0, f1, fn)
   //

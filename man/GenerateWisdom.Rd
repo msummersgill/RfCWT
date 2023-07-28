@@ -4,7 +4,11 @@
 \alias{GenerateWisdom}
 \title{Generate a set of wisdom files for FFTW}
 \usage{
-GenerateWisdom(Threads = c(2L, 4L, 8L, 16L, 28L), Execute = FALSE)
+GenerateWisdom(
+  Threads = c(2L, 4L, 8L, 16L),
+  Execute = FALSE,
+  Mode = "FFTW_PATIENT"
+)
 }
 \arguments{
 \item{Threads}{an integer vector specifying the distinct combination of threads desired.}
