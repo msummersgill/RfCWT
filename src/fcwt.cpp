@@ -353,6 +353,12 @@ void FCWT::create_FFT_optimization_plan(int maxsize, int flags) {
   }
 }
 void FCWT::create_FFT_optimization_plan(int maxsize, string flags) {
+#ifdef MKL
+    std::cout << "Package compiled with Intel MKL FFTW3, saving and loading of plans is not supported" << std::endl;
+    std::cout << "Use argument 'optimize = FALSE' (default) to suppress this warning'" << std::endl;
+    return;
+#endif
+
   int flag = 0;
   
   if(flags == "FFTW_MEASURE") {
@@ -384,11 +390,7 @@ void FCWT::load_FFT_optimization_plan() {
     char file_for[50];
     sprintf(file_for, "n%d_t%d.wis", newsize, threads);
     // TODO: Add more robust support for system wisdom cache
-    fftwf_import_system_wisdom();
-    //https://github.com/FFTW/fftw3/issues/176
-    //if(!fftwf_import_system_wisdom()) {
-    //  std::cout << "WARNING:No system wisdom found in default location - /etc/fftw/wisdomf" << std::endl;
-    //}
+    int syswisdomavailable = fftwf_import_system_wisdom();
     if(!fftwf_import_wisdom_from_filename(file_for)) {
       std::cout << "WARNING: Optimization scheme '" << file_for << "' was not found, fallback to calculation without optimization." << std::endl;
     }
@@ -483,8 +485,10 @@ void FCWT::cwt(float *pinput, int psize, complex<float>* poutput, Scales *scales
   fftwf_plan p;
   
   // //Load optimization schemes if necessary
+#ifndef MKL
   load_FFT_optimization_plan();
-  
+#endif
+
   // //Perform forward FFT on input signal
   float *input;
   if(complexinput) {
