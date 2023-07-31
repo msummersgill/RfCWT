@@ -10,6 +10,27 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// start_profiler
+SEXP start_profiler(SEXP str);
+RcppExport SEXP _RfCWT_start_profiler(SEXP strSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type str(strSEXP);
+    rcpp_result_gen = Rcpp::wrap(start_profiler(str));
+    return rcpp_result_gen;
+END_RCPP
+}
+// stop_profiler
+SEXP stop_profiler();
+RcppExport SEXP _RfCWT_stop_profiler() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(stop_profiler());
+    return rcpp_result_gen;
+END_RCPP
+}
 // fCWT
 Rcpp::List fCWT(std::vector<float> x, int fn, float f0, float f1, float fs, int nthreads, bool optimize, std::string flags, std::string dist, bool normalization, float bandwidth);
 RcppExport SEXP _RfCWT_fCWT(SEXP xSEXP, SEXP fnSEXP, SEXP f0SEXP, SEXP f1SEXP, SEXP fsSEXP, SEXP nthreadsSEXP, SEXP optimizeSEXP, SEXP flagsSEXP, SEXP distSEXP, SEXP normalizationSEXP, SEXP bandwidthSEXP) {
@@ -33,6 +54,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RfCWT_start_profiler", (DL_FUNC) &_RfCWT_start_profiler, 1},
+    {"_RfCWT_stop_profiler", (DL_FUNC) &_RfCWT_stop_profiler, 0},
     {"_RfCWT_fCWT", (DL_FUNC) &_RfCWT_fCWT, 11},
     {NULL, NULL, 0}
 };

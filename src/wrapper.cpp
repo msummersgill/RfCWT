@@ -43,6 +43,7 @@ Rcpp::List fCWT(std::vector<float> x,
   int n = x.size(); //signal length
 
   //output: n x scales
+  // https://stackoverflow.com/questions/61128554/c-vs-python-numpy-complex-arrays-performance
   std::vector<complex<float>> tfm(n*fn);
   
   //Create a wavelet object
@@ -86,20 +87,19 @@ Rcpp::List fCWT(std::vector<float> x,
   //length    - integer signal length
   //output    - floating pointer to output array
   //scales    - pointer to scales object
+
   fcwt.cwt(&x[0], n, &tfm[0], &scs);
-  
   ComplexVector scalogram = wrap(tfm);
   scalogram.attr("dim") = Dimension(n, fn);
-  
+
   // Extract frequencies associated with each scale
   float freqs[fn];
   scs.getFrequencies(freqs,fn);
   // Convert to a vector
   NumericVector outfreqs = NumericVector(freqs,freqs+sizeof(freqs)/sizeof(*freqs));
-  
+
   //NumericVector scales2 = wrap(scales);
   return Rcpp::List::create(Rcpp::Named("scalogram")=scalogram,
                            Rcpp::Named("freqs")=outfreqs);
-  
 }
 
