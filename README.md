@@ -62,22 +62,22 @@ When the package is compiled using the Intel MKL library, plan saving and loadin
 
 ## Benchmarking
 
-Comparing to the `pycwt` port, results indicate relatively high performance.
+Comparing to the `pycwt` port, results are somewhat slower, but exceed performance of other wavelet libraries in R.
 
+### Compiled with Intel MKL _(No Planning)_
 
 ```r
-Length_1e4 <- rnorm(1e4)
-Length_1e5 <- rnorm(1e5)
+n_1e4 <- rnorm(1e4)
+n_1e5 <- rnorm(1e5)
 opt <- FALSE
 microbenchmark::microbenchmark(
-  `10k-300`   = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads = 4L,fn =  300,fs = 100,optimize = opt),
-  `100k-300`  = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads = 4L,fn =  300,fs = 100,optimize = opt),
-  `10k-3000`  = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads = 4L,fn = 3000,fs = 100,optimize = opt),
-  `100k-3000` = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads = 4L,fn = 3000,fs = 100,optimize = opt),
+  `10k-300`   = RfCWT::fCWT(n_1e4, f0 = 1,f1 = 101,nthreads = 8L,fn =  300,fs = 100,optimize = opt),
+  `100k-300`  = RfCWT::fCWT(n_1e5, f0 = 1,f1 = 101,nthreads = 8L,fn =  300,fs = 100,optimize = opt),
+  `10k-3000`  = RfCWT::fCWT(n_1e4, f0 = 1,f1 = 101,nthreads = 8L,fn = 3000,fs = 100,optimize = opt),
+  `100k-3000` = RfCWT::fCWT(n_1e5, f0 = 1,f1 = 101,nthreads = 8L,fn = 3000,fs = 100,optimize = opt),
   times = 5,unit = "seconds"
 ) 
 ```
-
 ```
 Unit: seconds
       expr        min        lq      mean     median         uq       max neval
@@ -87,7 +87,31 @@ Unit: seconds
  100k-3000 7.10608957 7.5964948 7.6111734 7.64778173 7.79255553 7.9129453     5
 ```
 
-For reference, executing the [pycwt benchmark notebook](github.com/fastlib/fCWT/blob/main/benchmark.ipynb) on my machine and using 4 threads _(Ubuntu 20.04 hosted by VMWare with Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz - not exactly a high performance computing environment)_ gives the following results.
+### Compiled with Atlas BLAS/LAPACK
+
+```r
+Length_1e4 <- rnorm(1e4)
+Length_1e5 <- rnorm(1e5)
+opt <- TRUE
+microbenchmark::microbenchmark(
+  `10k-300`   = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads = 8L,fn =  300,fs = 100,optimize = opt),
+  `100k-300`  = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads = 8L,fn =  300,fs = 100,optimize = opt),
+  `10k-3000`  = RfCWT::fCWT(Length_1e4, f0 = 1,f1 = 101,nthreads = 8L,fn = 3000,fs = 100,optimize = opt),
+  `100k-3000` = RfCWT::fCWT(Length_1e5, f0 = 1,f1 = 101,nthreads = 8L,fn = 3000,fs = 100,optimize = opt),
+  times = 5,unit = "seconds"
+) 
+```
+
+```
+Unit: seconds
+      expr        min         lq       mean     median         uq        max neval
+   10k-300  0.1051914  0.1053895  0.1061431  0.1060205  0.1069113  0.1072026     5
+  100k-300  1.0243758  1.0266802  1.1697846  1.0270924  1.0273088  1.7434659     5
+  10k-3000  1.0436445  1.0446397  1.2136461  1.1063655  1.2617259  1.6118550     5
+ 100k-3000  9.8671865 10.0237925 10.0578129 10.0310547 10.1542103 10.2128206     5
+```
+
+For reference, executing the [pycwt benchmark notebook](github.com/fastlib/fCWT/blob/main/benchmark.ipynb) on my machine and using 8 threads _(Ubuntu 20.04 hosted by VMWare with Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz - not exactly a high performance computing environment)_ gives the following results.
 
 Additionally, `pcwt` timings do not include time spent allocating memory, initializing the wavelet, scales, fcwt object, or creating optimization plans. Bundling these steps into a single command adds some additional overhead for this R equivalent for benchmarking purposes.
 
@@ -105,10 +129,10 @@ timeit.timeit('fcwt_obj.cwt(sig_100k, scales3000, output_100k_3000)', number=10,
 ```
 
 ```
-10k-300:  0.0712810929864645 seconds
-100k-300:  0.7036659803241492 seconds
-10k-3000:  0.6577187534421682 seconds
-100k-3000:  6.803404000774026 seconds
+10k-300:  0.049193423986434934 seconds
+100k-300:  0.3959102466702461 seconds
+10k-3000:  0.437694988399744 seconds
+100k-3000:  3.7881476119160653 seconds
 ```
 
 
