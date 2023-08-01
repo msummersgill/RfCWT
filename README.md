@@ -62,7 +62,65 @@ When the package is compiled using the Intel MKL library, plan saving and loadin
 
 ## Benchmarking
 
-Comparing to the `pycwt` port, results are somewhat slower, but exceed performance of other wavelet libraries in R.
+Compared to other R libraries, only [`RcppWavelet`](https://github.com/msummersgill/RcppWavelet) comes close to the performance of `RfCWT` on larger data sizes.
+
+```r
+sizefactor = 4
+f0 = 1.0
+f1 = 32
+fs = 100.0
+no = 5
+bpo = 32 * sizefactor
+bpo2 = 28 * sizefactor
+nc = 28L
+n = as.numeric(seq_len(1e3))
+x = sin(2*pi * (n + 0.002 * (n-256)^2 ) / 16)
+xmat <- matrix(cbind(n/fs,x),ncol = 2)
+xdf <- data.frame(n,x)
+
+print(paste0("Small: N = 10,000 x ",bpo * no, " Scales"))
+microbenchmark::microbenchmark(
+  WaveletComp = WaveletComp::analyze.wavelet(xdf,my.series = "x",dt = 1/fs,dj = 1/(bpo),lowerPeriod = 1/f1, upperPeriod = 1/f0, n.sim = 0, make.pval = F, loess.span = 0, verbose = F),
+  RWave = Rwave::cwt(x, noctave=no, nvoice=bpo, plot = F, twoD = T),
+  biwavelet = biwavelet::wt(xmat,dt = 1/fs,J1 = bpo * no - 1L, do.sig = F),
+  RcppWavelet = RcppWavelet::analyze(x,bands_per_octave = bpo2,frequency_min = f0,frequency_max = f1,samplerate_hz = fs,mother_wavelet = "MORLET",morlet_carrier = 2 * pi,cores = 1L),
+  RfCWT = RfCWT::fCWT(x, f0 = f0,f1 = f1,nthreads =  1L,fn =  bpo * no,fs = fs,optimize = F),
+  times = 1,unit = "seconds"
+)
+
+## Equivalent code for Medium and Large omitted for the sake of brevity.
+## For Medium and Large Sizes, 28 cores were used by RcppWavelet and RfCWT.
+## 
+
+```
+```
+[1] "Small: N = 10,000 x 640 Scales"
+Unit: seconds
+        expr       min        lq      mean    median        uq       max neval
+ WaveletComp 0.5358071 0.5358071 0.5358071 0.5358071 0.5358071 0.5358071     1
+       RWave 0.3057232 0.3057232 0.3057232 0.3057232 0.3057232 0.3057232     1
+   biwavelet 1.5347819 1.5347819 1.5347819 1.5347819 1.5347819 1.5347819     1
+ RcppWavelet 0.2228511 0.2228511 0.2228511 0.2228511 0.2228511 0.2228511     1
+       RfCWT 0.0317194 0.0317194 0.0317194 0.0317194 0.0317194 0.0317194     1
+
+[1] "Medium: N = 100,000 x 640 Scales"
+Unit: seconds
+        expr       min        lq      mean    median        uq       max neval
+ WaveletComp 79.832644 79.832644 79.832644 79.832644 79.832644 79.832644     1
+       RWave 40.555053 40.555053 40.555053 40.555053 40.555053 40.555053     1
+   biwavelet 45.054479 45.054479 45.054479 45.054479 45.054479 45.054479     1
+ RcppWavelet  2.288625  2.288625  2.288625  2.288625  2.288625  2.288625     1
+       RfCWT  4.151020  4.151020  4.151020  4.151020  4.151020  4.151020     1
+
+[1] "Large: N = 1,000,000 x 640 Scales"
+Unit: seconds
+        expr      min       lq     mean   median       uq      max neval
+ RcppWavelet 25.03916 25.03916 25.03916 25.03916 25.03916 25.03916     1
+       RfCWT 14.30784 14.30784 14.30784 14.30784 14.30784 14.30784     1
+```
+
+
+Comparing to the `pycwt` port, results are somewhat slower, but exceed performance of other wavelet libraries in R. Issue [RfCWT/3](https://github.com/msummersgill/RfCWT/issues/3) details why performance is slower - primarily, time spent allocating memory and then converting the complex float matrix to a numeric type compatible with R.
 
 ### Compiled with Intel MKL _(No Planning)_
 
@@ -113,7 +171,6 @@ Unit: seconds
 
 For reference, executing the [pycwt benchmark notebook](github.com/fastlib/fCWT/blob/main/benchmark.ipynb) on my machine and using 8 threads _(Ubuntu 20.04 hosted by VMWare with Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz - not exactly a high performance computing environment)_ gives the following results.
 
-Additionally, `pcwt` timings do not include time spent allocating memory, initializing the wavelet, scales, fcwt object, or creating optimization plans. Bundling these steps into a single command adds some additional overhead for this R equivalent for benchmarking purposes.
 
 ```python
 ## Majority of benchmark code removed for the sake of brevity
